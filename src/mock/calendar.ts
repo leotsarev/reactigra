@@ -44,7 +44,6 @@ const games: GameModel[] =
             id: 7967,
             name: 'Железный трон',
             type: GameTypeEnum.Forest,
-            uri: null,
             polygon: GarrisonA,
             mg: 'МГ Наррентурм',
             email: new URL('mailto:merialt@gmail.com'),

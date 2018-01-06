@@ -1,7 +1,7 @@
 export interface GameModel {
     id: number;
     name: string;
-    uri: URL | null;
+    uri?: URL;
     type: GameTypeEnum;
     polygon: PolygonTypeModel;
     mg: string;
