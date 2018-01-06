@@ -1,16 +1,13 @@
 import * as React from 'react';
-import { CalendarPage } from './pages/CalendarPage';
 import { About } from './pages/About';
-import { BrowserRouter, Route, Switch as RouteSwitch, Link } from 'react-router-dom';
-import { Redirect } from 'react-router';
-import AppBar from 'material-ui/AppBar/AppBar';
-import { Toolbar, Typography, Reboot } from 'material-ui';
-import Button from 'material-ui/Button/Button';
+import { BrowserRouter, Route, Switch as RouteSwitch } from 'react-router-dom';
+import { Reboot } from 'material-ui';
 import { MacroRegionModel } from './model/game';
 import { RegionAPI } from './api/regions';
 import { RegionMenu } from './components/RegionMenu';
 import withStyles, { WithStyles } from 'material-ui/styles/withStyles';
-import * as classNames from 'classnames';
+import { TopMenu } from './components/TopMenu';
+import { CalendarRouting } from './CalendarRouting';
 
 const appBarHeight = 64; // TODO dedup
 
@@ -27,11 +24,6 @@ const decorate = withStyles(({ palette, spacing, mixins, breakpoints, zIndex }) 
         display: 'flex',
         width: '100%',
         height: '100%',
-      },
-      appBar: {
-        position: 'absolute' as 'absolute',
-        width: `100%`,
-        height: appBarHeight,
       },
       drawerHeader: mixins.toolbar,
       content: {
@@ -62,76 +54,40 @@ interface Props {
 }
 
 type AppProp = 
-  Props & WithStyles<'root'> & WithStyles<'appFrame'> & WithStyles<'appBar'> & WithStyles<'appBarLeft'>
- & WithStyles<'drawerHeader'> & WithStyles<'content'>;
+  Props & WithStyles<'root'> & WithStyles<'appFrame'> & WithStyles<'drawerHeader'> & WithStyles<'content'>;
 
 export const AppDecorated = decorate<{}>(
 
     class extends React.Component<AppProp, AppState> {
-     
-      constructor(props: AppProp) {
-        super(props);
-        this.state = {
-            regions: [],
-            year: currentYear()
-        };
+
+      state = {
+        regions: [],
+        year: currentYear()
+      };
+
+      public async componentDidMount() {
+          const regions = await RegionAPI.fetchRegions();
+          this.setState({regions: regions});
       }
 
-        public async componentDidMount() {
-            const regions = await RegionAPI.fetchRegions();
-            this.setState({regions: regions});
-        }
-
-    calendarRoute(region: MacroRegionModel) {
-        const year = this.state.year;
-        const routePart = region.urlPart;
-        const macroRegionId = region.id;
+      render() {
+        const { classes } = this.props;
         return (
-          <RouteSwitch>
-            <Redirect from={'/' + routePart + '/' + year} to={'/' + routePart}/>
-            <Route 
-              path={'/' + routePart + '/:year'}
-              render={(props) => <CalendarPage macroregion={macroRegionId} year={props.match.params.year}/>}   
-            />
-            <Route 
-              path={'/' + routePart}
-              render={(props) => <CalendarPage macroregion={macroRegionId} year={year}/>}   
-            />
-          </RouteSwitch>
+          <Reboot>
+            <BrowserRouter>
+              <div className={classes.root}>
+                <TopMenu />
+                <div className={classes.appFrame}>
+                  <RegionMenu regions={this.state.regions}/>
+                    <RouteSwitch>
+                      <Route path="/about" component={About}/>
+                      <CalendarRouting regions={this.state.regions} year={this.state.year}/>
+                    </RouteSwitch>
+                </div>
+              </div>
+            </BrowserRouter>
+          </Reboot>
         );
       }
-
-    render() {
-      const { classes } = this.props;
-      return (
-            <div className={classes.root}>
-                <Reboot>
-                  <BrowserRouter>
-                    <div>
-                        <AppBar className={classNames(classes.appBar, classes.appBarLeft)} >
-                          <Toolbar>
-                            <Typography type="title" color="inherit">
-                              <Link to="/"><Button color="contrast">Когда-Игра</Button></Link>
-                              <a href="http://rpg.ru/newb"><Button color="contrast">Новичку</Button></a>
-                              <Link to="/about"><Button color="contrast">О сайте</Button></Link>
-                            </Typography>
-                          </Toolbar>
-                        </AppBar>
-                        <div className={classes.appFrame}>
-                        <RegionMenu regions={this.state.regions}/>
-                        <Route path="/about" component={About}/>
-                        <Route 
-                          exact={true} 
-                          path="/" 
-                          render={(props) => <CalendarPage year={this.state.year}/>}
-                        />
-                        {this.state.regions.map(this.calendarRoute.bind(this))}
-                        </div>
-                      </div>
-                  </BrowserRouter>
-                </Reboot>
-              </div>
- );
-    }
-}
+  }
 );
