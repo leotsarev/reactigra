@@ -8,33 +8,47 @@ interface Props {
     year: number;
 }
 
-function calendarRoute(region: MacroRegionModel, year: number) {
-    const routePart = region.urlPart;
-    const macroRegionId = region.id;
-    return (
-      <RouteSwitch>
-        <Redirect from={'/' + routePart + '/' + year} to={'/' + routePart}/>
-        <Route 
-          path={'/' + routePart + '/:year'}
-          render={(props) => <CalendarPage macroregion={macroRegionId} year={props.match.params.year}/>}   
-        />
-        <Route 
-          path={'/' + routePart}
-          render={(props) => <CalendarPage macroregion={macroRegionId} year={year}/>}   
-        />
-      </RouteSwitch>
-    );
-  }
+export class CalendarRouting extends React.Component<Props, {}> {
 
-export function CalendarRouting(props: Props) {
-    return (
-        <RouteSwitch>
+    calendarRoute(region: MacroRegionModel) {
+        const year = this.props.year;
+        return (
+          <RouteSwitch key={region.id}>
+            <Redirect from={'/' + region.urlPart + '/' + year} to={'/' + region.urlPart}/>
             <Route 
-                exact={true} 
-                path="/" 
-                render={() => <CalendarPage year={props.year}/>}
+              path={'/' + region.urlPart + '/:year'}
+              render={
+                  (props) => 
+                    <CalendarPage 
+                        macroregion={region.id} 
+                        year={props.match.params.year} 
+                        regions={this.props.regions}
+                    />}   
             />
-            {props.regions.map(region => calendarRoute(region, props.year))}
-      </RouteSwitch>
-    );
+            <Route 
+              path={'/' + region.urlPart}
+              render={
+                (props) => 
+                  <CalendarPage 
+                      macroregion={region.id} 
+                      year={year} 
+                      regions={this.props.regions}
+                  />}  
+            />
+          </RouteSwitch>
+        );
+      }
+
+    render() {
+        return (
+            <RouteSwitch>
+                <Route 
+                    exact={true} 
+                    path="/" 
+                    render={() => <CalendarPage year={this.props.year} regions={this.props.regions}/>}
+                />
+                {this.props.regions.map(region => this.calendarRoute(region))}
+        </RouteSwitch>
+        );
+    }
 }

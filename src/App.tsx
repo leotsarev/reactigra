@@ -4,10 +4,10 @@ import { BrowserRouter, Route, Switch as RouteSwitch } from 'react-router-dom';
 import { Reboot } from 'material-ui';
 import { MacroRegionModel } from './model/game';
 import { RegionAPI } from './api/regions';
-import { RegionMenu } from './components/RegionMenu';
 import withStyles, { WithStyles } from 'material-ui/styles/withStyles';
 import { TopMenu } from './components/TopMenu';
 import { CalendarRouting } from './CalendarRouting';
+// import { Redirect } from 'react-router';
 
 const appBarHeight = 64; // TODO dedup
 
@@ -46,7 +46,8 @@ function currentYear(): number {
 
 interface AppState {
     regions: Readonly<MacroRegionModel[]>;
-    year: number;
+    currentYear: number;
+    yearToJump?: number;
 }
 
 interface Props {
@@ -59,11 +60,15 @@ type AppProp =
 export const AppDecorated = decorate<{}>(
 
     class extends React.Component<AppProp, AppState> {
-
       state = {
         regions: [],
-        year: currentYear()
+        currentYear: currentYear(),
+        yearToJump: undefined,
       };
+
+      onYearChanged(year: number) {
+        this.setState({yearToJump: year});
+      }
 
       public async componentDidMount() {
           const regions = await RegionAPI.fetchRegions();
@@ -76,12 +81,17 @@ export const AppDecorated = decorate<{}>(
           <Reboot>
             <BrowserRouter>
               <div className={classes.root}>
-                <TopMenu />
+                {/* {this.state.yearToJump && <Redirect push={true} to={`/msk/${this.state.yearToJump}`} />} */}
+                <TopMenu 
+                  firstYear={1999} 
+                  lastYear={2019} 
+                  selectedYear={this.state.currentYear}
+                  onYearChanged={year => this.onYearChanged(year)} 
+                />
                 <div className={classes.appFrame}>
-                  <RegionMenu regions={this.state.regions}/>
                     <RouteSwitch>
                       <Route path="/about" component={About}/>
-                      <CalendarRouting regions={this.state.regions} year={this.state.year}/>
+                      <CalendarRouting regions={this.state.regions} year={this.state.currentYear}/>
                     </RouteSwitch>
                 </div>
               </div>

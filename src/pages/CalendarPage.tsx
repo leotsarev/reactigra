@@ -1,10 +1,12 @@
 import * as React from 'react';
 import { Calendar } from '../components/Calendar';
-import { GameModel } from '../model/game';
+import { GameModel, MacroRegionModel } from '../model/game';
 import { GameAPI } from '../api/games';
+import { RegionMenu } from '../components/RegionMenu';
 
 interface AppProps {
     macroregion?: number;
+    regions: Readonly<MacroRegionModel[]>;
     year: number;
 }
 
@@ -28,6 +30,11 @@ export class CalendarPage extends React.Component<AppProps, CalendarState> {
     }
 
     render() {
-        return <Calendar calendar={this.state.games}/>;
+        return (
+            <React.Fragment>
+                <RegionMenu regions={this.props.regions}/>
+                <Calendar calendar={this.state.games}/>
+            </React.Fragment>
+        );
     }
 }
