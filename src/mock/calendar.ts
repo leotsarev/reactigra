@@ -4,6 +4,7 @@ import {
 
 const Gloria: PolygonTypeModel = {id: 16, name: 'Глория'};
 const GarrisonA: PolygonTypeModel = {id: 1000, name: 'Гарнизон-А'};
+const Unknown: PolygonTypeModel = {id: 0, name: 'Неизвестен'};
 
 const CentralRussia: MacroRegionModel = {id: 3, name: 'Москва и Центральный регион', urlPart: 'msk'};
 const NorthWest: MacroRegionModel = {id: 2, name: 'Северо-Запад', urlPart: 'spb'};
@@ -17,6 +18,7 @@ const Belorussia: MacroRegionModel = {id: 11, name: 'Белоруссия', urlP
 const Kazahstan: MacroRegionModel = {id: 12, name: 'Казахстан', urlPart: 'kz'};
 
 const Tver: RegionModel = {id: 5, name: 'Тверская область', parent: CentralRussia, shortName: 'Тверь'};
+const Spb: RegionModel = {id: 1, name: 'Ленинградская область', parent: NorthWest, shortName: 'СПб'};
 
 const games: GameModel[] = 
      [
@@ -58,6 +60,22 @@ const games: GameModel[] =
             comment: '',
             fbClub: '',
             ljClub: '',
+        },
+        {
+            id: 7965,
+            name: 'Время Приключений',
+            type: GameTypeEnum.Forest,
+            mg: 'МО «Академическая Общественность»',
+            status: GameStatusEnum.Ok,
+            subregion: Spb,
+            polygon: Unknown,
+            beginDate: new Date(2018, 7, 6),
+            duration: 3,
+            isDeleted: false,
+            email: new URL('mailto:dmaslov123@mail.ru'),
+            comment: '',
+            playersCount: 50,
+            
         }
     ];
 export const MockAll = {

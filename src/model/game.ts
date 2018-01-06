@@ -11,10 +11,10 @@ export interface GameModel {
     subregion: RegionModel;
     isDeleted: boolean;
     playersCount: number;
-    allrpgInfoId: number;
-    vkClub: string;
-    ljClub: string;
-    fbClub: string;
+    allrpgInfoId?: number;
+    vkClub?: string;
+    ljClub?: string;
+    fbClub?: string;
     beginDate: Date;
     duration: number;
 }
