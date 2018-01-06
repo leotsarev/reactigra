@@ -6,8 +6,8 @@ import { Redirect } from 'react-router';
 import AppBar from 'material-ui/AppBar/AppBar';
 import { Toolbar, Typography } from 'material-ui';
 import Button from 'material-ui/Button/Button';
-import { MockAll } from './mock/calendar';
 import { MacroRegionModel } from './model/game';
+import { RegionAPI } from './api/regions';
 
 function currentYear(): number {
   const now = new Date();
@@ -37,11 +37,20 @@ function calendarLink(region: MacroRegionModel) {
   return <Link to={'/' + region.urlPart}><Button color="contrast">{region.name}</Button></Link>;
 }
 
-function generateLinks() {
-  return  MockAll.regions.map(calendarLink);
+interface AppState {
+    regions: Readonly<MacroRegionModel[]>;
 }
 
-export class App extends React.Component<{}, {}> {
+export class App extends React.Component<{}, AppState> {
+    state = {
+        regions: []
+    };
+
+    public async componentDidMount() {
+        const regions = await RegionAPI.fetchRegions();
+        this.setState({regions: regions});
+    }
+
     render() {
         return (
         <BrowserRouter>
@@ -56,7 +65,7 @@ export class App extends React.Component<{}, {}> {
         </Toolbar>
         <Toolbar>
           <Typography type="subheading" color="inherit">
-            {generateLinks()}
+            {this.state.regions.map(calendarLink)}
           </Typography>
         </Toolbar>
         </AppBar>
@@ -66,7 +75,7 @@ export class App extends React.Component<{}, {}> {
           path="/" 
           render={(props) => <CalendarPage />}
         />
-        {MockAll.regions.map(calendarRoute)}
+        {this.state.regions.map(calendarRoute)}
       </div>
  </BrowserRouter>
  );
