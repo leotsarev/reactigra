@@ -12,17 +12,17 @@ import { RegionMenu } from './components/RegionMenu';
 import withStyles, { WithStyles } from 'material-ui/styles/withStyles';
 import * as classNames from 'classnames';
 
-const drawerWidth = 240;
+const appBarHeight = 64; // TODO dedup
 
-const decorate = withStyles(({ palette, spacing, mixins, breakpoints }) => ({
+const decorate = withStyles(({ palette, spacing, mixins, breakpoints, zIndex }) => ({
     root: {
         width: '100%',
-        height: 430,
         marginTop: spacing.unit * 3,
         zIndex: 1,
         overflow: 'hidden' as 'hidden',
       },
       appFrame: {
+        marginTop: appBarHeight,
         position: 'relative' as 'relative',
         display: 'flex',
         width: '100%',
@@ -30,15 +30,8 @@ const decorate = withStyles(({ palette, spacing, mixins, breakpoints }) => ({
       },
       appBar: {
         position: 'absolute' as 'absolute',
-        width: `calc(100% - ${drawerWidth}px)`,
-      },
-      appBarLeft: {
-        marginLeft: drawerWidth,
-      },
-      drawerPaper: {
-        height: '100%',
-        width: drawerWidth,
-        position: 'relative' as 'relative',
+        width: `100%`,
+        height: appBarHeight,
       },
       drawerHeader: mixins.toolbar,
       content: {
@@ -70,7 +63,7 @@ interface Props {
 
 type AppProp = 
   Props & WithStyles<'root'> & WithStyles<'appFrame'> & WithStyles<'appBar'> & WithStyles<'appBarLeft'>
-  & WithStyles<'drawerPaper'> & WithStyles<'drawerHeader'> & WithStyles<'content'>;
+ & WithStyles<'drawerHeader'> & WithStyles<'content'>;
 
 export const AppDecorated = decorate<{}>(
 
@@ -111,20 +104,21 @@ export const AppDecorated = decorate<{}>(
     render() {
       const { classes } = this.props;
       return (
-            <div>
+            <div className={classes.root}>
                 <Reboot>
                   <BrowserRouter>
                     <div>
                         <AppBar className={classNames(classes.appBar, classes.appBarLeft)} >
-                        <Toolbar>
-                          <Typography type="title" color="inherit">
-                            <Link to="/"><Button color="contrast">Когда-Игра</Button></Link>
-                            <Link to="http://rpg.ru/newb"><Button color="contrast">Новичку</Button></Link>
-                            <Link to="/about"><Button color="contrast">О сайте</Button></Link>
-                          </Typography>
-                        </Toolbar>
+                          <Toolbar>
+                            <Typography type="title" color="inherit">
+                              <Link to="/"><Button color="contrast">Когда-Игра</Button></Link>
+                              <a href="http://rpg.ru/newb"><Button color="contrast">Новичку</Button></a>
+                              <Link to="/about"><Button color="contrast">О сайте</Button></Link>
+                            </Typography>
+                          </Toolbar>
                         </AppBar>
-                        <RegionMenu regions={this.state.regions} />
+                        <div className={classes.appFrame}>
+                        <RegionMenu regions={this.state.regions}/>
                         <Route path="/about" component={About}/>
                         <Route 
                           exact={true} 
@@ -132,6 +126,7 @@ export const AppDecorated = decorate<{}>(
                           render={(props) => <CalendarPage year={this.state.year}/>}
                         />
                         {this.state.regions.map(this.calendarRoute.bind(this))}
+                        </div>
                       </div>
                   </BrowserRouter>
                 </Reboot>
