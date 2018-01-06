@@ -4,18 +4,59 @@ import { About } from './pages/About';
 import { BrowserRouter, Route, Switch as RouteSwitch, Link } from 'react-router-dom';
 import { Redirect } from 'react-router';
 import AppBar from 'material-ui/AppBar/AppBar';
-import { Toolbar, Typography } from 'material-ui';
+import { Toolbar, Typography, Reboot } from 'material-ui';
 import Button from 'material-ui/Button/Button';
 import { MacroRegionModel } from './model/game';
 import { RegionAPI } from './api/regions';
+import { RegionMenu } from './components/RegionMenu';
+import withStyles, { WithStyles } from 'material-ui/styles/withStyles';
+import * as classNames from 'classnames';
+
+const drawerWidth = 240;
+
+const decorate = withStyles(({ palette, spacing, mixins, breakpoints }) => ({
+    root: {
+        width: '100%',
+        height: 430,
+        marginTop: spacing.unit * 3,
+        zIndex: 1,
+        overflow: 'hidden' as 'hidden',
+      },
+      appFrame: {
+        position: 'relative' as 'relative',
+        display: 'flex',
+        width: '100%',
+        height: '100%',
+      },
+      appBar: {
+        position: 'absolute' as 'absolute',
+        width: `calc(100% - ${drawerWidth}px)`,
+      },
+      appBarLeft: {
+        marginLeft: drawerWidth,
+      },
+      drawerPaper: {
+        height: '100%',
+        width: drawerWidth,
+        position: 'relative' as 'relative',
+      },
+      drawerHeader: mixins.toolbar,
+      content: {
+        backgroundColor: palette.background.default,
+        width: '100%',
+        padding: spacing.unit * 3,
+        height: 'calc(100% - 56px)',
+        marginTop: 56,
+        [breakpoints.up('sm')]: {
+          height: 'calc(100% - 64px)',
+          marginTop: 64,
+        },
+      },
+  }));
 
 function currentYear(): number {
-  const now = new Date();
-  return (now.getMonth() > 10) ? (now.getFullYear() + 1) : now.getFullYear();
-}
-
-function calendarLink(region: MacroRegionModel) {
-  return <Link to={'/' + region.urlPart}><Button color="contrast">{region.name}</Button></Link>;
+    const now = new Date();
+    return (now.getMonth() > 10) ? (now.getFullYear() + 1) : now.getFullYear();
 }
 
 interface AppState {
@@ -23,16 +64,30 @@ interface AppState {
     year: number;
 }
 
-export class App extends React.Component<{}, AppState> {
-    state = {
-        regions: [],
-        year: currentYear()
-    };
+interface Props {
+  hello: string;
+}
 
-    public async componentDidMount() {
-        const regions = await RegionAPI.fetchRegions();
-        this.setState({regions: regions});
-    }
+type AppProp = 
+  Props & WithStyles<'root'> & WithStyles<'appFrame'> & WithStyles<'appBar'> & WithStyles<'appBarLeft'>
+  & WithStyles<'drawerPaper'> & WithStyles<'drawerHeader'> & WithStyles<'content'>;
+
+export const AppDecorated = decorate<{}>(
+
+    class extends React.Component<AppProp, AppState> {
+     
+      constructor(props: AppProp) {
+        super(props);
+        this.state = {
+            regions: [],
+            year: currentYear()
+        };
+      }
+
+        public async componentDidMount() {
+            const regions = await RegionAPI.fetchRegions();
+            this.setState({regions: regions});
+        }
 
     calendarRoute(region: MacroRegionModel) {
         const year = this.state.year;
@@ -54,32 +109,34 @@ export class App extends React.Component<{}, AppState> {
       }
 
     render() {
-        return (
-        <BrowserRouter>
-    <div>
-        <AppBar position="static" >
-        <Toolbar>
-          <Typography type="title" color="inherit">
-            <Link to="/"><Button color="contrast">Когда-Игра</Button></Link>
-            <Link to="http://rpg.ru/newb"><Button color="contrast">Новичку</Button></Link>
-            <Link to="/about"><Button color="contrast">О сайте</Button></Link>
-          </Typography>
-        </Toolbar>
-        <Toolbar>
-          <Typography type="subheading" color="inherit">
-            {this.state.regions.map(calendarLink)}
-          </Typography>
-        </Toolbar>
-        </AppBar>
-        <Route path="/about" component={About}/>
-        <Route 
-          exact={true} 
-          path="/" 
-          render={(props) => <CalendarPage year={this.state.year}/>}
-        />
-        {this.state.regions.map(this.calendarRoute.bind(this))}
-      </div>
- </BrowserRouter>
+      const { classes } = this.props;
+      return (
+            <div>
+                <Reboot>
+                  <BrowserRouter>
+                    <div>
+                        <AppBar className={classNames(classes.appBar, classes.appBarLeft)} >
+                        <Toolbar>
+                          <Typography type="title" color="inherit">
+                            <Link to="/"><Button color="contrast">Когда-Игра</Button></Link>
+                            <Link to="http://rpg.ru/newb"><Button color="contrast">Новичку</Button></Link>
+                            <Link to="/about"><Button color="contrast">О сайте</Button></Link>
+                          </Typography>
+                        </Toolbar>
+                        </AppBar>
+                        <RegionMenu regions={this.state.regions} />
+                        <Route path="/about" component={About}/>
+                        <Route 
+                          exact={true} 
+                          path="/" 
+                          render={(props) => <CalendarPage year={this.state.year}/>}
+                        />
+                        {this.state.regions.map(this.calendarRoute.bind(this))}
+                      </div>
+                  </BrowserRouter>
+                </Reboot>
+              </div>
  );
     }
 }
+);

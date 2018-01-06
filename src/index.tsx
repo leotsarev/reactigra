@@ -2,9 +2,9 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import './index.css';
 import 'typeface-roboto';
-import { App } from './App';
+import { AppDecorated } from './App';
 
 ReactDOM.render(
-  <App />,
+  <AppDecorated />,
   document.getElementById('root')
 );  
