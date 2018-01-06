@@ -1,20 +1,33 @@
 import * as React from 'react';
-import { MockAll } from '../mock/calendar';
 import { Calendar } from '../components/Calendar';
+import { GameModel } from '../model/game';
+import { GameAPI } from '../api/games';
 
 interface AppProps {
     macroregion?: number;
-    year?: number;
+    year: number;
 }
 
-function loadGames(macroregion?: number) {
-    if (macroregion != null) {
-        return MockAll.games.filter(game => game.subregion.parent.id === macroregion);
-    } else {
-        return MockAll.games;
-    }
+interface CalendarState {
+    games: Readonly<GameModel[]>;
 }
-export function CalendarPage(props: AppProps) {
-    const games = loadGames(props.macroregion);
-    return <Calendar calendar={games}/>;
+
+export class CalendarPage extends React.Component<AppProps, CalendarState> {
+    state = {
+        games: []
+    };
+
+    public async componentDidMount() {
+        const games = this.props.macroregion === undefined 
+            ? await GameAPI.fetchGames(this.props.year) 
+            : await GameAPI.fetchGamesByRegion(this.props.year, this.props.macroregion);
+        this.setState({
+            games: games
+        });
+        
+    }
+
+    render() {
+        return <Calendar calendar={this.state.games}/>;
+    }
 }

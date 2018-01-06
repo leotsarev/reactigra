@@ -14,42 +14,44 @@ function currentYear(): number {
   return (now.getMonth() > 10) ? (now.getFullYear() + 1) : now.getFullYear();
 }
 
-function calendarRoute(region: MacroRegionModel) {
-  const year = currentYear();
-  const routePart = region.urlPart;
-  const macroRegionId = region.id;
-  return (
-    <RouteSwitch>
-      <Redirect from={'/' + routePart + '/' + year} to={'/' + routePart}/>
-      <Route 
-        path={'/' + routePart + '/:year'}
-        render={(props) => <CalendarPage macroregion={macroRegionId} year={props.match.params.year}/>}   
-      />
-      <Route 
-        path={'/' + routePart}
-        render={(props) => <CalendarPage macroregion={macroRegionId} />}   
-      />
-    </RouteSwitch>
-  );
-}
-
 function calendarLink(region: MacroRegionModel) {
   return <Link to={'/' + region.urlPart}><Button color="contrast">{region.name}</Button></Link>;
 }
 
 interface AppState {
     regions: Readonly<MacroRegionModel[]>;
+    year: number;
 }
 
 export class App extends React.Component<{}, AppState> {
     state = {
-        regions: []
+        regions: [],
+        year: currentYear()
     };
 
     public async componentDidMount() {
         const regions = await RegionAPI.fetchRegions();
         this.setState({regions: regions});
     }
+
+    calendarRoute(region: MacroRegionModel) {
+        const year = this.state.year;
+        const routePart = region.urlPart;
+        const macroRegionId = region.id;
+        return (
+          <RouteSwitch>
+            <Redirect from={'/' + routePart + '/' + year} to={'/' + routePart}/>
+            <Route 
+              path={'/' + routePart + '/:year'}
+              render={(props) => <CalendarPage macroregion={macroRegionId} year={props.match.params.year}/>}   
+            />
+            <Route 
+              path={'/' + routePart}
+              render={(props) => <CalendarPage macroregion={macroRegionId} year={year}/>}   
+            />
+          </RouteSwitch>
+        );
+      }
 
     render() {
         return (
@@ -73,9 +75,9 @@ export class App extends React.Component<{}, AppState> {
         <Route 
           exact={true} 
           path="/" 
-          render={(props) => <CalendarPage />}
+          render={(props) => <CalendarPage year={this.state.year}/>}
         />
-        {this.state.regions.map(calendarRoute)}
+        {this.state.regions.map(this.calendarRoute.bind(this))}
       </div>
  </BrowserRouter>
  );
