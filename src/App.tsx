@@ -3,13 +3,9 @@ import { About } from './pages/About';
 import { BrowserRouter, Route, Switch as RouteSwitch } from 'react-router-dom';
 import { Reboot } from 'material-ui';
 import { MacroRegionModel } from './model/game';
-import { RegionAPI } from './api/regions';
+import { GlobalConfigAPI } from './api/globalConfig';
 import withStyles, { WithStyles } from 'material-ui/styles/withStyles';
-import { TopMenu } from './components/TopMenu';
 import { CalendarRouting } from './CalendarRouting';
-// import { Redirect } from 'react-router';
-
-const appBarHeight = 64; // TODO dedup
 
 const decorate = withStyles(({ palette, spacing, mixins, breakpoints, zIndex }) => ({
     root: {
@@ -17,13 +13,6 @@ const decorate = withStyles(({ palette, spacing, mixins, breakpoints, zIndex }) 
         marginTop: spacing.unit * 3,
         zIndex: 1,
         overflow: 'hidden' as 'hidden',
-      },
-      appFrame: {
-        marginTop: appBarHeight,
-        position: 'relative' as 'relative',
-        display: 'flex',
-        width: '100%',
-        height: '100%',
       },
       drawerHeader: mixins.toolbar,
       content: {
@@ -47,7 +36,8 @@ function currentYear(): number {
 interface AppState {
     regions: Readonly<MacroRegionModel[]>;
     currentYear: number;
-    yearToJump?: number;
+    firstYear: number;
+    lastYear: number;
 }
 
 interface Props {
@@ -55,7 +45,7 @@ interface Props {
 }
 
 type AppProp = 
-  Props & WithStyles<'root'> & WithStyles<'appFrame'> & WithStyles<'drawerHeader'> & WithStyles<'content'>;
+  Props & WithStyles<'root'> & WithStyles<'drawerHeader'> & WithStyles<'content'>;
 
 export const AppDecorated = decorate<{}>(
 
@@ -63,16 +53,14 @@ export const AppDecorated = decorate<{}>(
       state = {
         regions: [],
         currentYear: currentYear(),
-        yearToJump: undefined,
+        firstYear: currentYear(),
+        lastYear: currentYear(),
       };
 
-      onYearChanged(year: number) {
-        this.setState({yearToJump: year});
-      }
-
       public async componentDidMount() {
-          const regions = await RegionAPI.fetchRegions();
-          this.setState({regions: regions});
+          const regions = await GlobalConfigAPI.fetchRegions();
+          const yearRange = await GlobalConfigAPI.fetchYearRange();
+          this.setState({regions: regions, firstYear: yearRange.first, lastYear: yearRange.last});
       }
 
       render() {
@@ -81,19 +69,15 @@ export const AppDecorated = decorate<{}>(
           <Reboot>
             <BrowserRouter>
               <div className={classes.root}>
-                {/* {this.state.yearToJump && <Redirect push={true} to={`/msk/${this.state.yearToJump}`} />} */}
-                <TopMenu 
-                  firstYear={1999} 
-                  lastYear={2019} 
-                  selectedYear={this.state.currentYear}
-                  onYearChanged={year => this.onYearChanged(year)} 
-                />
-                <div className={classes.appFrame}>
                     <RouteSwitch>
                       <Route path="/about" component={About}/>
-                      <CalendarRouting regions={this.state.regions} year={this.state.currentYear}/>
+                      <CalendarRouting 
+                        regions={this.state.regions} 
+                        defaultYear={this.state.currentYear}
+                        firstYear={this.state.firstYear}
+                        lastYear={this.state.lastYear}
+                      />
                     </RouteSwitch>
-                </div>
               </div>
             </BrowserRouter>
           </Reboot>

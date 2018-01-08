@@ -35,12 +35,10 @@ const games: GameModel[] =
             beginDate: new Date(2010, 7, 6),
             comment: '',
             duration: 6,
-            fbClub: '',
             isDeleted: false,
             ljClub: 'secondage2010',
             playersCount: 800,
             subregion: Tver,
-            vkClub: '',
         },
         {
             id: 7967,
@@ -58,8 +56,6 @@ const games: GameModel[] =
             duration: 4,
             isDeleted: false,
             comment: '',
-            fbClub: '',
-            ljClub: '',
         },
         {
             id: 7965,

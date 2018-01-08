@@ -3,38 +3,77 @@ import { Calendar } from '../components/Calendar';
 import { GameModel, MacroRegionModel } from '../model/game';
 import { GameAPI } from '../api/games';
 import { RegionMenu } from '../components/RegionMenu';
+import { TopMenu } from '../components/TopMenu';
+import { withStyles } from 'material-ui';
+import { WithStyles } from 'material-ui/styles/withStyles';
 
-interface AppProps {
-    macroregion?: number;
+const appBarHeight = 64; 
+
+const decorate = withStyles(({ palette, spacing, mixins, breakpoints, zIndex }) => ({
+      appFrame: {
+        marginTop: appBarHeight,
+        position: 'relative' as 'relative',
+        display: 'flex',
+        width: '100%',
+        height: '100%',
+      },
+      appBar: {
+        position: 'absolute' as 'absolute',
+        width: `100%`,
+        height: appBarHeight,
+      },
+  }));
+
+interface CalendarPageProps {
+    currentRegion?: MacroRegionModel;
     regions: Readonly<MacroRegionModel[]>;
-    year: number;
+    selectedYear: number;
+    firstYear: number;
+    lastYear: number;
 }
 
 interface CalendarState {
     games: Readonly<GameModel[]>;
 }
 
-export class CalendarPage extends React.Component<AppProps, CalendarState> {
+export const CalendarPage = decorate<CalendarPageProps>(
+    class extends React.Component<CalendarPageProps & WithStyles<'appFrame'> & WithStyles<'appBar'>, CalendarState> {
     state = {
         games: []
     };
 
+    // this is a hack. Better make GameAPI cancellable 
+    private _isMounted: boolean;
+
     public async componentDidMount() {
-        const games = this.props.macroregion === undefined 
-            ? await GameAPI.fetchGames(this.props.year) 
-            : await GameAPI.fetchGamesByRegion(this.props.year, this.props.macroregion);
-        this.setState({
-            games: games
-        });
-        
+        this._isMounted = true;
+        const games = this.props.currentRegion === undefined 
+            ? await GameAPI.fetchGames(this.props.selectedYear - 0) 
+            : await GameAPI.fetchGamesByRegion(this.props.selectedYear - 0, this.props.currentRegion.id);
+        if (this._isMounted) {
+            this.setState({games: games});
+        }
+    }
+
+    public componentWillUnmount() {
+        this._isMounted = false;
     }
 
     render() {
         return (
-            <React.Fragment>
-                <RegionMenu regions={this.props.regions}/>
-                <Calendar calendar={this.state.games}/>
-            </React.Fragment>
+            <div>
+                <TopMenu 
+                  firstYear={this.props.firstYear} 
+                  lastYear={this.props.lastYear} 
+                  selectedYear={this.props.selectedYear}
+                  selectedRegion={this.props.currentRegion}
+                  classes={{appBar: this.props.classes.appBar}}
+                />
+                <div className={this.props.classes.appFrame}>
+                    <RegionMenu regions={this.props.regions} currentYear={this.props.selectedYear}/>
+                    <Calendar calendar={this.state.games}/>
+                </div>
+            </div>
         );
     }
-}
+});
