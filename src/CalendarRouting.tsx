@@ -30,7 +30,7 @@ export class CalendarRouting extends React.Component<Props, {}> {
                     (props) => 
                         <CalendarPage 
                             currentRegion={region} 
-                            selectedYear={props.match.params.year} 
+                            selectedYear={+props.match.params.year} 
                             regions={this.props.regions}
                             firstYear={this.props.firstYear}
                             lastYear={this.props.lastYear}

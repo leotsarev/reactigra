@@ -24,7 +24,7 @@ const decorate = withStyles(({ palette, spacing, mixins, breakpoints, zIndex }) 
       },
   }));
 
-interface CalendarPageProps {
+export interface CalendarPageProps {
     currentRegion?: MacroRegionModel;
     regions: Readonly<MacroRegionModel[]>;
     selectedYear: number;
