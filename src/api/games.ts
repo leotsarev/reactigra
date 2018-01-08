@@ -17,8 +17,8 @@ async function fetchGamesByRegion(year: number, macroregionId: number): Promise<
     // await delay(1000);
     warning(typeof(year) === typeof(2018), 'year should be number ' + typeof(year));
     const games = MockAll.games
-      //  .filter(yearFilter(year))
-        .filter(game => game.beginDate.getFullYear() == year && game.subregion.parent.id === macroregionId)
+        .filter(yearFilter(year))
+        .filter(game => game.subregion.parent.id === macroregionId)
         .slice();
     warning(games.length !== 0, `Should be games for year: ${year} and region: ${macroregionId}`);
     return games;
